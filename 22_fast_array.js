@@ -226,39 +226,93 @@ function forceDirected_array(graph) {
 
     var gpu = new GPU();  // ????????????????????????????????????
 
+	//var graf_length = graph.length;
+
+
+/*			function createForce() {
+				var opt = {
+					dimensions: [85, 85, 85],
+					mode: 'gpu'
+				};
+
+				return gpu.createKernel(function(A, B) {
+					var sum = 0;
+					for (var i=0; i<512; i++) {
+						sum += A[this.thread.y][i] * B[i][this.thread.x];
+					}
+					return sum;
+				}, opt);
+			}
+*/
+	
 	var opt = {
-		dimensions: [graph.length, graph.length, graph.length],   // ???? define graph.length  ???????????
-		mode: gpu    // or cpu
+		dimensions: [85, 85, 85] ,  //[graf_length,graf_length,graf_length],   // ???? define graph.length  ???????????
+		mode: 'gpu'    // or cpu
 	};
 
 
     var myGPUfunc = gpu.createKernel(function(graf){
-	  // for (var i = 0; i < graph.length; i++) {
+/*      var forcesX = [], forcesY = [];
+      for (var i = 0; i < graph.length; i++)
+        forcesX[i] = forcesY[i] = 0;
+*/
+
+	//for (var i = 0; i < 85; i++) {
 		  var nodeX = graf[this.thread.x][0][0];  //i
 		  var nodeY = graf[this.thread.x][1][0];
 		  //var nodeZ = graf[i][2][0];
-		  //for (var j = i + 1; j < graph.length; j++) {
+		  //for (var j = i + 1; j < 85; j++) {
 			var otherX = graf[this.thread.y][0][0];  //j
 			var otherY = graf[this.thread.y][1][0];  //j
 			var apartX = otherX - nodeX;
 			var apartY = otherY - nodeY;
 			var distance = Math.max(1, Math.sqrt(apartX * apartX + apartY * apartY));
-			var forceSize = -repulsionStrength / (distance * distance);
-			if (graf[this.thread.x][2][this.thread.y])    //(node.hasEdge(other))
-				forceSize += (distance - springLength) * springStrength;
+			var forceSize = -1500 / (distance * distance);
+			//var l = graf[i][2][j]
+			if (graf[this.thread.x][2][this.thread.y] == 1)    //(node.hasEdge(other))    ?????????????????????????????????????????????
+				forceSize += (distance - 40) * 0.1;
 
 			var forceX = apartX * forceSize / distance;
 			var forceY = apartY * forceSize / distance;
+			
 			graf[this.thread.x][3][0] += forceX; graf[this.thread.x][3][1] += forceY;  //im Level 3 werden die force Zwischenergebnisse abgespeichert
-			graf[this.thread.y][3][0] -= forceX; graf[this.thread.y][3][1] -= forceY;
+		    graf[this.thread.y][3][0] -= forceX; graf[this.thread.y][3][1] -= forceY;
+
+			/*
+			var t1 = graf[this.thread.x][3][0];
+			var t2 = t1 + forceX;
+			graf[this.thread.x][3][0] = t2;
+			
+			var t3 = graf[this.thread.x][3][1];
+			var t4 = t3 + forceY;
+			graf[this.thread.x][3][1] = t4;  //im Level 3 werden die force Zwischenergebnisse abgespeichert
+			
+			var t5 = graf[this.thread.y][3][0];
+			var t6 = t5 - forceX;
+			graf[this.thread.y][3][0] = t6;
+			
+			var t7 = graf[this.thread.y][3][1];
+			var t8 = t7 - forceY;
+			graf[this.thread.y][3][1] = t8;
+			*/
+			
 			
 			//alert("force, x: " + forceX + " y: " + forceY);
-		  // end for }
-	  // end for }
+		  //} // end for }
+	//}// end for }
 	  //sum = A[this.thread.y][i] * B[i][this.thread.x];
 	return graf; //????????????????????''
     }, opt);
 
+	/*
+	var springLength = 40;
+	var springStrength = 0.1;
+
+	var repulsionStrength = 1500;
+
+	*/
+	
+	
 //Ziel: modifie forceDirected_array to make it use
 //      gpu.js
 // draft ????????????????
@@ -282,12 +336,11 @@ function forceDirected_gpu(graph) {
 		}
 	  }
 	
-
-    //copy graph-object values to graf-array
+	console.log(graph.length);
+	//copy graph-object values to graf-array
 	for (var i = 0; i < graph.length; i++) {
 	graf[i][0][0] = graph[i].pos.x;
 	//console.log(graf[i][0][0]);
-	//console.log(graph.length);
 	
 	graf[i][1][0] = graph[i].pos.y;
 	//console.log(graf[i][1][0]);

@@ -51,9 +51,9 @@ function runLayout(implementation, graph) {
   var totalSteps = 0, time = 0;
   function step() {
     var startTime = Date.now();
-    for (var i = 0; i < 100; i++)
+    for (var i = 0; i < 1; i++)
       implementation(graph);
-    totalSteps += 100;
+    totalSteps += 1;
     time += Date.now() - startTime;
     drawGraph(graph);
 
